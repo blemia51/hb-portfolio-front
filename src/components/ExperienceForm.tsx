@@ -1,15 +1,29 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, DialogActions, Container, Grid } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { DatePicker, DesktopDatePicker } from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers';
 
+
+interface Experiences {
+  id?: number;
+  title: string;
+  company: string;
+  place: string;
+  start_date: string;
+  end_date: string | null;
+  stack: string[];
+  details: string;
+}
 interface ExperienceFormProps {
   initialExperience: {
+    experiences: Experiences[]
+    id?: number;
     title: string;
     company: string;
+    place: string;
     start_date: string;
-    end_date: string;
-    stack: string;
+    end_date: string | null;
+    stack: string[];
     details: string;
   };
   onCancel: () => void;
@@ -69,8 +83,10 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ initialExperience, onCa
             name="title"
             label={t('Title')}
             type="text"
-            InputLabelProps={{
-              shrink: true,
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
             }}
             fullWidth
             value={experience.title}
@@ -83,8 +99,10 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ initialExperience, onCa
             name="company"
             label={t('Company')}
             type="text"
-            InputLabelProps={{
-              shrink: true,
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
             }}
             fullWidth
             value={experience.company}
@@ -119,8 +137,10 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ initialExperience, onCa
             name="stack"
             label={t('Stack')}
             type="text"
-            InputLabelProps={{
-              shrink: true,
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
             }}
             fullWidth
             value={experience.stack}
@@ -133,8 +153,10 @@ const ExperienceForm: React.FC<ExperienceFormProps> = ({ initialExperience, onCa
             name="details"
             label={t('Details')}
             type="text"
-            InputLabelProps={{
-              shrink: true,
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
             }}
             fullWidth
             multiline

@@ -4,6 +4,7 @@ import { loginApi } from './api/loginApi';
 import { contactApi } from './api/contactApi';
 import { aboutApi } from './api/aboutApi';
 import { experienceApi } from './api/experienceApi';
+import { profileApi } from './api/profileApi';
 
 const store = configureStore({
   reducer: {
@@ -13,6 +14,7 @@ const store = configureStore({
     [contactApi.reducerPath]: contactApi.reducer, 
     [aboutApi.reducerPath]: aboutApi.reducer,
     [experienceApi.reducerPath]: experienceApi.reducer,
+    [profileApi.reducerPath]: profileApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat([
@@ -21,6 +23,7 @@ const store = configureStore({
       contactApi.middleware,
       aboutApi.middleware,
       experienceApi.middleware,
+      profileApi.middleware,
 		]),
 });
 

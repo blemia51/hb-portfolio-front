@@ -90,9 +90,11 @@ const ContactForm: React.FC<ContactProps> = ({ handleClose }) => {
           <TextField
            margin="normal"
             size='small'
-            InputLabelProps={{
+            slotProps={{
+              inputLabel: {
                 shrink: true,
-              }}
+              },
+            }}
             label={t('name')}
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -106,8 +108,10 @@ const ContactForm: React.FC<ContactProps> = ({ handleClose }) => {
           <TextField
            margin="normal"
             size='small'
-            InputLabelProps={{
-              shrink: true,
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
             }}
             label={t('email')}
             type="email"

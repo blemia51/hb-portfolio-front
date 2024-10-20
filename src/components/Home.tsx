@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, Avatar, Button, Dialog, IconButton, MenuItem, Select, FormControl, Divider } from '@mui/material';
+import { Box, Typography, Avatar, Button, Dialog, IconButton, MenuItem, Select, FormControl, Divider, DialogTitle } from '@mui/material';
 import LoginForm from './LoginForm';
 import { LinkedIn, GitHub, Email, Edit } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -9,16 +9,25 @@ import enFlag from '../assets/en-flag.png';
 import deFlag from '../assets/de-flag.png';
 import frFlag from '../assets/fr-flag.png';
 import { useTranslation } from 'react-i18next';
+import Profile from './Profile';
+// import HomeForm from './HomeForm';
 
 const Home: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [homeFormOpen, setHomeFormOpen] = useState(false);
   const { t, i18n } = useTranslation();
   const [language, setLanguage] = useState('en'); // Default language
-  const [isAdmin, setIsAdmin] = useState(true
-
-  
-  ); // Simulate admin login status
+  const [isAdmin, setIsAdmin] = useState(true); // Simulate admin login status
+  const [profileData, setProfileData] = useState({
+    name: '',
+    jobTitle: '',
+    techStack: [],
+    linkedin: '',
+    github: '',
+    email: '',
+    profilePic: '',
+  });
 
   // Open/Close the modal login
   const handleOpen = () => {setOpen(true)};
@@ -27,9 +36,17 @@ const Home: React.FC = () => {
   const handleContactOpen = () => setContactOpen(true);
   const handleContactClose = () => setContactOpen(false);
 
+  const handleHomeFormOpen = () => setHomeFormOpen(true)
+  const handleHomeFormClose = () => setHomeFormOpen(false)
+
   const changeLanguage = (lng: string) => {
     setLanguage(lng);
     i18n.changeLanguage(lng);
+  };
+
+  const handleUpdate = (data: any) => {
+    setProfileData(data);
+    //setEditing(false);
   };
 
   return (
@@ -147,72 +164,23 @@ const Home: React.FC = () => {
           },
         }}
       >
-        <Typography variant="h5" sx={{ color: '#ffffff' }}>
-          Hervé Bourelle
-        </Typography>
-        {t('title')}
-        <Typography sx={{ color: '#ffffff' }}>
-          React | React Native | NodeJS | NestJS | Typescript
-        </Typography>
+      
+        <Profile isAdmin={isAdmin} />
       </Typography>
-      {isAdmin && (
-          <IconButton
-            sx={{
-              position: 'absolute',
-              top: -5,
-              right: 40,
-              color: 'white',
-              backgroundColor: '#3c4043',
-            }}
-          >
-            <Edit />
-          </IconButton>
-        )}
-      </Box>
-
-      {/* Social Media Icons (LinkedIn, GitHub, Email) */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          mt: 4, // Margin top for spacing
-          flexWrap: 'wrap', // Allow icons to wrap on smaller screens
-        }}
-      >
-        {/* LinkedIn Icon */}
-        <IconButton
-          color="primary"
-          aria-labelledby="LinkedIn"
-          href="https://www.linkedin.com/in/herve-bourelle"
-          target="_blank"
-          sx={{ mx: 1 }} // Margin between icons
-        >
-          <LinkedIn sx={{ fontSize: 40, color: 'white' }} />
-        </IconButton>
-
-        {/* GitHub Icon */}
-        <IconButton
-          color="primary"
-          aria-labelledby="GitHub"
-          href="https://github.com/blemia51"
-          target="_blank"
-          sx={{ mx: 1 }}
-        >
-          <GitHub sx={{ fontSize: 40, color: 'white' }} />
-        </IconButton>
-
-        {/* Email Icon */}
-        <IconButton
-          color="primary"
-          aria-labelledby="Email"
-          href="mailto:herve.bourelle@gmail.com"
-          sx={{ mx: 1 }}
-        >
-          <Email sx={{ fontSize: 40, color: 'white' }} />
-        </IconButton>
+      
       </Box>
 
       {/* MUI Dialog (Modal) */}
+      <Dialog open={homeFormOpen} onClose={handleHomeFormClose} >
+        <DialogTitle>{t('Edit Profile')}</DialogTitle>
+        <Divider variant='middle' />
+          {/* <HomeForm
+            initialData={profileData}
+            onCancel={handleHomeFormClose} // Cancel handler
+            onUpdate={handleUpdate} // Update handler
+          /> */}
+      </Dialog>
+
       <Dialog open={open} onClose={handleClose}>
         <Box
           sx={{

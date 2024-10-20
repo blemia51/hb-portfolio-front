@@ -3,12 +3,9 @@ import { Box, TextField, Button, DialogActions, Container } from '@mui/material'
 import { useTranslation } from 'react-i18next';
 
 interface AboutFormProps {
-  about?: {
-    id: number;
-    about: string;
-  };
+  about: string | null;
   onCancel: () => void;
-  onUpdate: (updatedAbout: any) => void;
+  onUpdate: (updatedAbout: string) => void;
 }
 
 const AboutForm: React.FC<AboutFormProps> = ({ about, onCancel, onUpdate }) => {
@@ -42,8 +39,10 @@ const AboutForm: React.FC<AboutFormProps> = ({ about, onCancel, onUpdate }) => {
             label="About"
             margin="normal"
             type="text"
-            InputLabelProps={{
-              shrink: true,
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
             }}
             fullWidth
             multiline

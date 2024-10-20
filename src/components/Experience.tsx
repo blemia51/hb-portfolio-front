@@ -10,13 +10,7 @@ interface ExperienceProps {
   isAdmin: boolean;
 }
 
-interface ExperienceData {
-  title: string;
-  company: string;
-  duration: string;
-  stack: string;
-  details: string;
-}
+
 
 interface Experiences {
   id?: number;
@@ -28,23 +22,6 @@ interface Experiences {
   stack: string[];
   details: string;
 }
-
-const initialExperiences: ExperienceData[] = [
-  {
-    title: "Vendor Management System",
-    company: "AKKODIS – Hamburg",
-    duration: "May 2022 - Present",
-    stack: "ReactJS, Redux, NodeJS, Microservices, GitLab, Docker",
-    details: "Worked on the development and performance optimization of an ERP using ReactJS and NodeJS. Mentored junior developers.",
-  },
-  {
-    title: "RFID Android App",
-    company: "E-Thik – Paris",
-    duration: "Nov 2021 - Apr 2022",
-    stack: "React Native",
-    details: "Built a mobile interface for RFID write/read functionalities.",
-  },
-];
 
 const Experience: React.FC<ExperienceProps> = ({ isAdmin }) => {
   const { t } = useTranslation();
@@ -87,6 +64,8 @@ const Experience: React.FC<ExperienceProps> = ({ isAdmin }) => {
   const groupedExperiences = groupByCompany(experiences);
   console.log('groupedExperiences', groupedExperiences);
 
+  const groupedValue = Object.values(groupedExperiences)
+  
   return (
     <Box
       sx={{
@@ -135,7 +114,7 @@ const Experience: React.FC<ExperienceProps> = ({ isAdmin }) => {
         }}
       />
       <Box sx={{ mt: 4, color: 'white', textAlign: 'left', width: '90%' }}>
-        {Object.values(groupedExperiences).map(({ experiences, company, place, start_date, end_date }) => (
+        {Object.values(groupedExperiences).map(({ experiences, company, place, start_date, end_date }, index) => (
           <div key={`${company}-${start_date}`} style={{ marginBottom: '20px' }}>
             <Typography variant='h6'>
               {experiences[0].title} ({company} – {place}, {format(new Date(start_date), 'MMMM yyyy')}{end_date ? ` - ${format(new Date(end_date), 'MMMM yyyy')}` : ' - Present'})
@@ -150,7 +129,9 @@ const Experience: React.FC<ExperienceProps> = ({ isAdmin }) => {
                 </Typography>
               </div>
             ))}
-             <Divider sx={{ my: 2, backgroundColor: 'white' }} />
+            {index < groupedValue.length - 1 &&
+              <Divider sx={{ my: 2, backgroundColor: 'white' }} />
+            }
           </div>
         ))}
       </Box>
@@ -159,7 +140,7 @@ const Experience: React.FC<ExperienceProps> = ({ isAdmin }) => {
         <DialogTitle>{t('Edit Experience')}</DialogTitle>
         <Divider variant='middle' />
           <ExperienceForm
-            initialExperience={initialExperiences as any} // Pass the selected experience to the form
+            initialExperience={groupedValue as any} // Pass the selected experience to the form
             onCancel={handleClose} // Cancel handler
               // onUpdate={handleUpdate} // Update handler
           />

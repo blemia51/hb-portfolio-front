@@ -72,9 +72,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
             required
             fullWidth
             id="email"
-            InputLabelProps={{
+            slotProps={{
+              inputLabel: {
                 shrink: true,
-              }}
+              },
+            }}
             label={t('email')}
             name="email"
             //autoComplete="email"
@@ -91,9 +93,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
             fullWidth
             size='small'
             name="password"
-            InputLabelProps={{
+            slotProps={{
+              inputLabel: {
                 shrink: true,
-              }}
+              },
+            }}
             label={t('password')}
             type="password"
             id="password"
