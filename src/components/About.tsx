@@ -6,7 +6,7 @@ import AboutForm from './AboutForm';
 import { useGetAboutQuery } from '../api/aboutApi';
 
 interface AboutProps {
-  isAdmin: boolean;
+  isLoggedIn: boolean;
 }
 
 interface About {
@@ -24,7 +24,7 @@ const modalStyle = {
   flexDirection: 'column',
 };
 
-const About: React.FC<AboutProps> = ({ isAdmin }) => {
+const About: React.FC<AboutProps> = ({ isLoggedIn }) => {
   const { t } = useTranslation();
   const { data: aboutData, error, isLoading } = useGetAboutQuery();  // Fetch data from API
   const [open, setOpen] = useState(false);
@@ -39,7 +39,7 @@ const About: React.FC<AboutProps> = ({ isAdmin }) => {
       setAboutText([aboutData]); // If it's a single object, wrap it in an array
     }
   }, [aboutData]);
-  
+
   const handleEdit = () => {
     setOpen(true);
   };
@@ -100,7 +100,7 @@ const About: React.FC<AboutProps> = ({ isAdmin }) => {
       </Typography>
 
       {/* Edit button visible only for admin */}
-      {isAdmin && (
+      {isLoggedIn && (
         <IconButton
           onClick={handleEdit}
           sx={{
@@ -128,7 +128,7 @@ const About: React.FC<AboutProps> = ({ isAdmin }) => {
       <Box sx={{ mt: 4, color: 'white', textAlign: 'left' }}>
       {aboutText  && aboutText.map((item) => (
           <Typography key={item.id} variant="body1">
-            {item?.about}
+            {t(`intro`, item?.about)}
           </Typography>
         ))}
       </Box>

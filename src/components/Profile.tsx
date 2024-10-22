@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Box, Typography, Button, CircularProgress, IconButton, Dialog, DialogTitle, Divider } from '@mui/material';
-import { useGetProfileQuery, useUpdateProfileMutation } from '../api/profileApi';
+import { Box, Typography, CircularProgress, IconButton, Dialog, DialogTitle, Divider } from '@mui/material';
+import { useGetProfileQuery } from '../api/profileApi';
 import ProfileForm from './ProfileForm';
 import { Email, GitHub, LinkedIn, Edit } from '@mui/icons-material';
+import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
 
 interface ProfileProps {
-  isAdmin: boolean;
+  isLoggedIn: boolean;
 }
 
 interface Profile {
@@ -19,14 +20,22 @@ interface Profile {
   email: string;
   profilePic?: string;
 }
-const Profile: React.FC<ProfileProps> = ({ isAdmin }) => {
+const Profile: React.FC<ProfileProps> = ({ isLoggedIn }) => {
   const { data: profile = [], error, isLoading } = useGetProfileQuery();
-  const [updateProfile] = useUpdateProfileMutation();
-  const { t, i18n } = useTranslation();
+  // const [updateProfile] = useUpdateProfileMutation();
+  const { t } = useTranslation();
   const [editMode, setEditMode] = useState(false);
   const [homeProfileOpen, setProfileFormOpen] = useState(false);
-  const handleProfileFormOpen = () => setProfileFormOpen(true)
-  const handleProfileFormClose = () => setProfileFormOpen(false)
+
+  const handleProfileFormOpen = () => {
+    setProfileFormOpen(true)
+    setEditMode(true)
+  }
+  const handleProfileFormClose = () => {
+    setProfileFormOpen(false)
+    setEditMode(false)
+  }
+    
   console.log('profile', profile)
 
   const handleSave = async (updatedProfile: Partial<Profile | undefined>) => {
@@ -42,7 +51,7 @@ const Profile: React.FC<ProfileProps> = ({ isAdmin }) => {
   return (
     <Box sx={{ position: 'relative', display: 'inline-block' }}>
       
-      {isAdmin && (
+      {isLoggedIn && (
           <IconButton
             onClick={handleProfileFormOpen}
             sx={{
@@ -59,9 +68,9 @@ const Profile: React.FC<ProfileProps> = ({ isAdmin }) => {
       
       <Box>
         {Array.isArray(profile) && profile.map((item: Profile) => (
-          <Box>
+          <Box key={item.id}>
             <Typography variant="h5">{item.name}</Typography>
-            <Typography variant="h4">{item.jobTitle}</Typography>
+            <Typography variant="h4">{t(`jobTitle.${item.jobTitle}`, item.jobTitle)}</Typography>
             <Typography variant="body1">{item?.techStack?.map((val) => val).join(" | ")}</Typography>
             {/* Social Media Icons (LinkedIn, GitHub, Email) */}
             <Box
@@ -105,9 +114,23 @@ const Profile: React.FC<ProfileProps> = ({ isAdmin }) => {
             </Box>
 
             <Dialog open={homeProfileOpen} onClose={handleProfileFormClose} >
-              <DialogTitle>{t('Edit Profile')}</DialogTitle>
+              <Box
+                sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                p: 2,
+                paddingBottom: 0,
+              }}
+              >
+                <DialogTitle>{t('Edit Profile')}</DialogTitle>
+                <IconButton onClick={handleProfileFormClose}>
+                  <CloseIcon />
+                </IconButton>
+              </Box>
               <Divider variant='middle' />
               <ProfileForm
+                editMode={editMode}
                 initialProfile ={profile}
                 onUpdate={handleSave}
                 onCancel={() => setProfileFormOpen(false)}

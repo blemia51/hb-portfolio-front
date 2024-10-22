@@ -7,7 +7,7 @@ import { useGetExperiencesQuery } from '../api/experienceApi';
 import { format } from 'date-fns';
 
 interface ExperienceProps {
-  isAdmin: boolean;
+  isLoggedIn: boolean;
 }
 
 
@@ -23,7 +23,7 @@ interface Experiences {
   details: string;
 }
 
-const Experience: React.FC<ExperienceProps> = ({ isAdmin }) => {
+const Experience: React.FC<ExperienceProps> = ({ isLoggedIn }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
  
@@ -91,7 +91,7 @@ const Experience: React.FC<ExperienceProps> = ({ isAdmin }) => {
       >
         {t('experience')}
       </Typography>
-      {isAdmin && (
+      {isLoggedIn && (
         <IconButton
           onClick={handleEdit}
           sx={{

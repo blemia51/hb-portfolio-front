@@ -5,7 +5,7 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
   en: {
     translation: {
-      title: 'Full Stack Developer',
+      jobTitle:  'Full Stack Developer',
       login: 'Admin Login',
       contact: 'Contact',
       linkedIn: 'LinkedIn',
@@ -25,7 +25,9 @@ const resources = {
   },
   de: {
     translation: {
-      title: 'Fullstack-Entwickler',
+      jobTitle: {
+        'Full Stack Developer': 'Fullstack-Entwickler'
+      },
       login: 'Admin-Anmeldung',
       contact: 'Kontakt',
       linkedIn: 'LinkedIn',
@@ -45,7 +47,9 @@ const resources = {
   },
   fr: {
     translation: {
-      title: 'Développeur Full Stack',
+      jobTitle: {
+        'Full Stack Developer': 'Développeur Full Stack'
+      },
       login: 'Login Admin',
       contact: 'Contact',
       linkedIn: 'LinkedIn',

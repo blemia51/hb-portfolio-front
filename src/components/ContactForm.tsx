@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Container, TextField, Typography } from '@mui/material';
+import { Box, Button, Container, TextField } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useSendContactEmailMutation } from '../api/contactApi';
 

@@ -3,54 +3,58 @@ import {
   Box,
   Button,
   TextField,
-  Typography,
   Container,
-  Alert,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
 import { useLoginMutation } from '../api/loginApi';
 import { useTranslation } from 'react-i18next';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 interface LoginFormProps {
+    isLoggedIn: boolean;
+    setIsLoggedIn: (data: boolean) => void;
     onClose: () => void;
   }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ onClose , setIsLoggedIn}) => {
   // Local state for email, password, and error handling
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [error, setError] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [login, { isLoading, isError }] = useLoginMutation();
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  // const [error, setError] = useState<string | null>(null);
+  const [login, error,] = useLoginMutation();
 
   const { t } = useTranslation()
   
-  // Mock authentication function
+  // authentication function
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
         const result = await login({ email, password }).unwrap()
-        console.log('Login successful, token:', result.access_token);
-        onClose()
+        const token = result.access_token;
+
+        if (token) {
+          localStorage.setItem('token', token);
+          setIsLoggedIn(true)
+          onClose()
+        }
+        
     } catch (err) {
         console.error('login failed:', err)
     }
   };
 
-  // If the user is already logged in
-  if (isLoggedIn) {
-    return (
-      <Container maxWidth="sm">
-        <Typography variant="h4" sx={{ textAlign: 'center', mt: 4 }}>
-          Welcome, Admin!
-        </Typography>
-        <Typography sx={{ textAlign: 'center', mt: 2 }}>
-          You can now add or manage your projects.
-        </Typography>
-      </Container>
-    );
-  }
+   // Toggle password visibility
+   const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
 
+  const handleMouseDownPassword = (event: React.MouseEvent) => {
+    event.preventDefault();
+  };
+  
   return (
     <Container maxWidth="sm">
       <Box
@@ -97,9 +101,22 @@ const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
               inputLabel: {
                 shrink: true,
               },
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={handleClickShowPassword}
+                    onMouseDown={handleMouseDownPassword}
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+                ),
+              }
             }}
             label={t('password')}
-            type="password"
+            type={showPassword ? 'text' : 'password'} // Toggle between text and password
             id="password"
             autoComplete="current-password"
             value={password}
@@ -107,7 +124,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
           />
 
           {/* Error Message */}
-          {error && <Alert severity="error">{error}</Alert>}
+          {/* {error && <Alert severity="error">{error}</Alert>} */}
 
           {/* Submit Button */}
           <Box sx={{

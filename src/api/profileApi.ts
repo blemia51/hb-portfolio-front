@@ -18,6 +18,15 @@ export const profileApi = createApi({
   reducerPath: 'profileApi',
   baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:8000/' }),
   endpoints: (builder) => ({
+    verifyToken: builder.mutation<{ isValid: boolean }, { token: string }>({
+      query: ({ token }) => ({
+        url: 'auth/verify-token',
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`, // Send token in headers
+        },
+      }),
+    }),
     getProfile: builder.query<Profile, void>({
       query: () => 'profile',
     }),
@@ -52,7 +61,8 @@ export const profileApi = createApi({
 });
 
 // Export hooks for usage in components
-export const { 
+export const {
+  useVerifyTokenMutation,
   useGetProfileQuery, 
   useUpdateProfileMutation, 
   useCreateProfileMutation,

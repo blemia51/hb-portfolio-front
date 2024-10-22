@@ -1,19 +1,61 @@
-import React from 'react';
-import { Box, Typography, Divider, IconButton } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, Divider, IconButton, Modal } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { useTranslation } from 'react-i18next';
+import { useGetSkillsByUserIdQuery } from '../api/skillApi';
+import { useGetLanguagesByUserIdQuery } from '../api/languageApi';
+import SkillForm from './SkillForm';
 
 interface SkillsProps {
-  isAdmin: boolean;
+  isLoggedIn: boolean;
+  userId: number;
 }
 
-const Skills: React.FC<SkillsProps> = ({ isAdmin }) => {
+interface Skill {
+  id: number;
+  name: string;
+  category?: {
+    id: number;
+    name: string;
+  }
+}
+
+const Skills: React.FC<SkillsProps> = ({ isLoggedIn, userId }) => {
   const { t } = useTranslation();
 
-  const handleEdit = () => {
-    // Handle edit logic here
-    console.log('Edit Skills Section');
+  const { data: skills = [], error, isLoading } = useGetSkillsByUserIdQuery(userId);
+  const { data: languages = [] } = useGetLanguagesByUserIdQuery(userId)
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error loading skills</p>;
+
+  const groupByCategory = (skills: Skill[]) => {
+    return skills.reduce((acc, skill) => {
+      const categoryName = `${skill.category?.name}`
+      if (!acc[categoryName]) {
+        acc[categoryName] = {
+          skill: [] 
+        }
+      }
+      acc[categoryName].skill.push(skill);
+      return acc
+    }, {} as { [categoryName: string]: {skill: Skill[]}} )
   }
+
+  const groupedSkills = groupByCategory(skills)
+  
+  console.log('skills', groupedSkills )
+
+  const handleEdit = () => {
+    setIsModalOpen(true);
+  }
+
+  // Function to handle modal close
+  const handleClose = () => {
+    setIsModalOpen(false); // Close the modal
+  };
 
   return (
     <Box
@@ -25,7 +67,6 @@ const Skills: React.FC<SkillsProps> = ({ isAdmin }) => {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        // border: 'lightgray, 1px, solid',
         borderRadius: 4
       }}
     >
@@ -50,7 +91,7 @@ const Skills: React.FC<SkillsProps> = ({ isAdmin }) => {
           alignSelf: 'center',
         }}
       />
-      {isAdmin && (
+      {isLoggedIn && (
         <IconButton
           onClick={handleEdit}
           sx={{
@@ -66,37 +107,44 @@ const Skills: React.FC<SkillsProps> = ({ isAdmin }) => {
       )}
       {/* Section Content */}
       <Box sx={{ mt: 4, color: 'white', textAlign: 'left', width: '90%' }}>
-        <Typography variant="h6">{t('Frontend')}</Typography>
-        <Typography variant="body2">
-          ReactJS, Redux, React Native, Gatsby, Redux-Saga, MUI
-        </Typography>
-        <Divider sx={{ my: 2, backgroundColor: 'white' }} />
-
-        <Typography variant="h6">{t('Backend')}</Typography>
-        <Typography variant="body2">
-          NodeJS, NestJS, Microservices, REST APIs, GraphQL, JWT, Auth0
-        </Typography>
-        <Divider sx={{ my: 2, backgroundColor: 'white' }} />
-
-        <Typography variant="h6">{t('DevOps')}</Typography>
-        <Typography variant="body2">Docker, GitLab</Typography>
-        <Divider sx={{ my: 2, backgroundColor: 'white' }} />
-
-        <Typography variant="h6">{t('Database')}</Typography>
-        <Typography variant="body2">MySQL, Postgress</Typography>
-        <Divider sx={{ my: 2, backgroundColor: 'white' }} />
-
-        <Typography variant="h6">{t('Tools')}</Typography>
-        <Typography variant="body2">Agile methodology, Git, Jira</Typography>
-        <Divider sx={{ my: 2, backgroundColor: 'white' }} />
-
+        {Object.entries(groupedSkills).map(([category, { skill }]) => (
+          <Box key={category}>
+            <Typography variant="h6">{category}</Typography>
+            <Typography variant="body2">
+            {skill.map(s => s.name).join(', ')}
+            </Typography>
+            <Divider sx={{ my: 2, backgroundColor: 'white' }} />
+          </Box>
+        ))}
         <Typography variant="h6">{t('Languages')}</Typography>
-        <Typography variant="body2">
-          French: Native <br />
-          English: C2 <br />
-          German: C1
-        </Typography>
+          {languages.map((language) => (
+            <Typography variant="body2" key={language.id}>
+                {`${language.name} : ${language.proficiency}`}
+            </Typography>
+          ))}
       </Box>
+      <Modal
+        open={isModalOpen}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            bgcolor: 'background.paper',
+            border: '2px solid #000',
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <SkillForm skills={groupedSkills} />
+        </Box>
+      </Modal>
     </Box>
   );
 };

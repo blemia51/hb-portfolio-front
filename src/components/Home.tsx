@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { Box, Typography, Avatar, Button, Dialog, IconButton, MenuItem, Select, FormControl, Divider, DialogTitle } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box, Typography, Avatar, Button, Dialog, IconButton, MenuItem, Select, FormControl, Divider } from '@mui/material';
 import LoginForm from './LoginForm';
-import { LinkedIn, GitHub, Email, Edit } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
 import profileImage from '../assets/profile.jpg';
 import ContactForm from './ContactForm';
@@ -10,15 +9,16 @@ import deFlag from '../assets/de-flag.png';
 import frFlag from '../assets/fr-flag.png';
 import { useTranslation } from 'react-i18next';
 import Profile from './Profile';
+import Resume from './Resume';
+import { useVerifyTokenMutation } from '../api/profileApi';
 // import HomeForm from './HomeForm';
 
 const Home: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
-  const [homeFormOpen, setHomeFormOpen] = useState(false);
   const { t, i18n } = useTranslation();
   const [language, setLanguage] = useState('en'); // Default language
-  const [isAdmin, setIsAdmin] = useState(true); // Simulate admin login status
+  const [isLoggedIn, setIsLoggedIn]= useState(false)
   const [profileData, setProfileData] = useState({
     name: '',
     jobTitle: '',
@@ -29,24 +29,60 @@ const Home: React.FC = () => {
     profilePic: '',
   });
 
+  const [verifyToken, { isLoading }] = useVerifyTokenMutation();
+
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = localStorage.getItem('token'); // Get token from localStorage
+
+      if (token) {
+        try {
+          // Call the RTK mutation to verify the token
+          const result = await verifyToken({ token }).unwrap();
+
+          if (result.isValid) {
+            setIsLoggedIn(true); // Token is valid
+          } else {
+            // Token is invalid or expired, log the user out
+            localStorage.removeItem('token');
+            setIsLoggedIn(false);
+            // navigate('/login');
+          }
+        } catch (err) {
+          // Handle the error, e.g., network issues
+          console.error('Error verifying token:', err);
+          setIsLoggedIn(false);
+          // navigate('/login');
+        }
+      } else {
+        setIsLoggedIn(false);
+        // navigate('/login');
+      }
+    };
+
+    checkToken(); // Call the function when the component mounts
+  }, [verifyToken]);
+
   // Open/Close the modal login
-  const handleOpen = () => {setOpen(true)};
+  const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   const handleContactOpen = () => setContactOpen(true);
   const handleContactClose = () => setContactOpen(false);
-
-  const handleHomeFormOpen = () => setHomeFormOpen(true)
-  const handleHomeFormClose = () => setHomeFormOpen(false)
 
   const changeLanguage = (lng: string) => {
     setLanguage(lng);
     i18n.changeLanguage(lng);
   };
 
-  const handleUpdate = (data: any) => {
-    setProfileData(data);
+  // const handleUpdate = (data: any) => {
+  //   setProfileData(data);
     //setEditing(false);
+  // };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false)
   };
 
   return (
@@ -118,17 +154,28 @@ const Home: React.FC = () => {
         >
           {t('resume')}
         </Button>
-        <Button
-          onClick={handleOpen}
-          sx={{
-            minWidth: 120,
-            color: '#ffffff',
-            mt: { xs: 1, sm: 0 }, // Add margin top on smaller screens
-            ml: { sm: 2 }, // Add left margin on larger screens
-          }}
+        {!isLoggedIn ? (
+          <Button
+            onClick={handleOpen}
+            sx={{
+              minWidth: 120,
+              color: '#ffffff',
+              mt: { xs: 1, sm: 0 }, // Add margin top on smaller screens
+              ml: { sm: 2 }, // Add left margin on larger screens
+            }}
+          >
+            {t('login')}
+          </Button>
+        ) : (
+          <Button
+          // variant="contained"
+          color="secondary"
+          onClick={handleLogout}
         >
-          {t('login')}
+          Logout
         </Button>
+        )
+        }
       </Box>
 
       {/* Circular Profile Picture */}
@@ -144,42 +191,30 @@ const Home: React.FC = () => {
       />
       {/* Full Stack Developer Title */}
       <Box sx={{ position: 'relative', display: 'inline-block' }}>
-      <Typography
-        variant="h4"
-        sx={{
-          color: '#ffffff',
-          transform: 'translateX(-100%)', // Initially offscreen
-          animation: 'slideIn 1.5s forwards', // Slide in animation
-          animationDelay: '0.5s', // Delay before the animation starts
-          opacity: 0, // Initially hidden
-          '@keyframes slideIn': {
-            '0%': {
-              transform: 'translateX(-100%)',
-              opacity: 0,
+        <Typography
+          variant="h4"
+          sx={{
+            color: '#ffffff',
+            transform: 'translateX(-100%)', // Initially offscreen
+            animation: 'slideIn 1.5s forwards', // Slide in animation
+            animationDelay: '0.5s', // Delay before the animation starts
+            opacity: 0, // Initially hidden
+            '@keyframes slideIn': {
+              '0%': {
+                transform: 'translateX(-100%)',
+                opacity: 0,
+              },
+              '100%': {
+                transform: 'translateX(0)',
+                opacity: 1,
+              },
             },
-            '100%': {
-              transform: 'translateX(0)',
-              opacity: 1,
-            },
-          },
-        }}
-      >
-      
-        <Profile isAdmin={isAdmin} />
-      </Typography>
-      
+          }}
+        >
+          <Profile isLoggedIn={isLoggedIn} />
+        </Typography>
+        <Resume isLoggedIn={isLoggedIn} />
       </Box>
-
-      {/* MUI Dialog (Modal) */}
-      <Dialog open={homeFormOpen} onClose={handleHomeFormClose} >
-        <DialogTitle>{t('Edit Profile')}</DialogTitle>
-        <Divider variant='middle' />
-          {/* <HomeForm
-            initialData={profileData}
-            onCancel={handleHomeFormClose} // Cancel handler
-            onUpdate={handleUpdate} // Update handler
-          /> */}
-      </Dialog>
 
       <Dialog open={open} onClose={handleClose}>
         <Box
@@ -197,7 +232,11 @@ const Home: React.FC = () => {
           </IconButton>
         </Box>
         <Divider variant='middle' />
-        <LoginForm onClose={handleClose} />
+        <LoginForm 
+          onClose={handleClose} 
+          isLoggedIn={isLoggedIn} 
+          setIsLoggedIn={setIsLoggedIn} 
+        />
       </Dialog>
 
       <Dialog open={contactOpen} onClose={handleContactClose}>
