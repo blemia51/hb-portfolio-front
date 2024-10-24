@@ -3,7 +3,7 @@ import { Box, TextField, Button, DialogActions, Container } from '@mui/material'
 import { useTranslation } from 'react-i18next';
 
 interface AboutFormProps {
-  about: string | null;
+  about: any
   onCancel: () => void;
   onUpdate: (updatedAbout: string) => void;
 }
@@ -41,13 +41,13 @@ const AboutForm: React.FC<AboutFormProps> = ({ about, onCancel, onUpdate }) => {
             type="text"
             slotProps={{
               inputLabel: {
-                shrink: true,
+                shrink: true,  // Use this instead of InputLabelProps
               },
             }}
             fullWidth
             multiline
             rows={6}
-            value={aboutText}
+            value={aboutText.about}
             onChange={(e) => setAboutText(e.target.value)}
           />
           <DialogActions>

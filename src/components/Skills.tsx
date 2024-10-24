@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Box, Typography, Divider, IconButton, Modal } from '@mui/material';
+import { Box, Typography, Divider, IconButton, Modal, Dialog, DialogTitle } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { useTranslation } from 'react-i18next';
-import { useGetSkillsByUserIdQuery } from '../api/skillApi';
+import { useGetSkillsByUserIdQuery, useUpdateSkillMutation } from '../api/skillApi';
 import { useGetLanguagesByUserIdQuery } from '../api/languageApi';
 import SkillForm from './SkillForm';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface SkillsProps {
   isLoggedIn: boolean;
@@ -27,6 +28,7 @@ const Skills: React.FC<SkillsProps> = ({ isLoggedIn, userId }) => {
   const { data: languages = [] } = useGetLanguagesByUserIdQuery(userId)
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [updateSkill] = useUpdateSkillMutation();
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error loading skills</p>;
@@ -56,6 +58,15 @@ const Skills: React.FC<SkillsProps> = ({ isLoggedIn, userId }) => {
   const handleClose = () => {
     setIsModalOpen(false); // Close the modal
   };
+
+  const handleUpdateSkill = async (updatedSkill: Skill) => {
+    try {
+      await updateSkill(updatedSkill); // Call the mutation to update the skill
+    } catch (error) {
+      console.error('Error updating skill:', error);
+    }
+  };
+
 
   return (
     <Box
@@ -123,28 +134,26 @@ const Skills: React.FC<SkillsProps> = ({ isLoggedIn, userId }) => {
             </Typography>
           ))}
       </Box>
-      <Modal
-        open={isModalOpen}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
+     
+      {/* Edit Modal */}
+      <Dialog open={isModalOpen} onClose={handleClose}>
         <Box
           sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 400,
-            bgcolor: 'background.paper',
-            border: '2px solid #000',
-            boxShadow: 24,
-            p: 4,
-          }}
-        >
-          <SkillForm skills={groupedSkills} />
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          p: 2,
+          paddingBottom: 0,
+        }}
+        >        
+          <DialogTitle>{t('Edit Skill')}</DialogTitle>
+            <IconButton onClick={handleClose}>
+              <CloseIcon   />
+            </IconButton>
         </Box>
-      </Modal>
+        <Divider variant='middle' />
+        <SkillForm skills={groupedSkills} onUpdateSkill={handleUpdateSkill} />
+      </Dialog>
     </Box>
   );
 };

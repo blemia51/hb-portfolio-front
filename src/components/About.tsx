@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Divider, IconButton, Dialog, DialogTitle } from '@mui/material';
+import { Box, Typography, Divider, IconButton, Dialog, DialogTitle, SnackbarOrigin } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import { useTranslation } from 'react-i18next';
 import AboutForm from './AboutForm';
-import { useGetAboutQuery } from '../api/aboutApi';
+import { AboutOnly, useGetAboutQuery, useUpdateAboutMutation } from '../api/aboutApi';
+import AutohideSnackbar from './SnackBar';
 
 interface AboutProps {
   isLoggedIn: boolean;
 }
 
-interface About {
-  id: number;
-  about: string;
+interface State extends SnackbarOrigin {
+	open: boolean
 }
-
 const modalStyle = {
   width: '600px',
   maxWidth: '90vw',
@@ -26,19 +25,21 @@ const modalStyle = {
 
 const About: React.FC<AboutProps> = ({ isLoggedIn }) => {
   const { t } = useTranslation();
-  const { data: aboutData, error, isLoading } = useGetAboutQuery();  // Fetch data from API
+  const { data: about, error, isLoading } = useGetAboutQuery();  // Fetch data from API
+  const [updateAbout, response] = useUpdateAboutMutation();
   const [open, setOpen] = useState(false);
-  const [aboutText, setAboutText] = useState<Array<About>>([]);
+  const [aboutText, setAboutText] = useState<AboutOnly | undefined>();
+  const [state, setState] = React.useState<State>({
+		open: false,
+		vertical: 'bottom',
+		horizontal: 'center',
+	});
 
 
   // Update aboutText when the API data is available
   useEffect(() => {
-    if (aboutData && Array.isArray(aboutData)) {
-      setAboutText(aboutData); // If the data is already an array
-    } else if (aboutData && typeof aboutData === 'object' && 'about' in aboutData) {
-      setAboutText([aboutData]); // If it's a single object, wrap it in an array
-    }
-  }, [aboutData]);
+      setAboutText(about); // If it's a single object, wrap it in an array
+  }, [about]);
 
   const handleEdit = () => {
     setOpen(true);
@@ -48,20 +49,27 @@ const About: React.FC<AboutProps> = ({ isLoggedIn }) => {
     setOpen(false);
   };
 
-  const handleUpdate = (newText: string) => {
-    // Assuming you want to update the first element in the array (or the only element if there's just one):
-    setAboutText((prevAboutText) => {
-      if (prevAboutText.length > 0) {
-        // Update the first element (or create logic to update specific items if you have multiple)
-        return [{ ...prevAboutText[0], about: newText }];
-      } else {
-        // If the array is empty, create a new entry
-        return [{ id: 1, about: newText }];
-      }
-    });
+  console.log('aboutData', aboutText)
+  console.log('response', response)
   
-    console.log("Updated About text:", newText);
-    setOpen(false);
+  const handleUpdate = (newText: string) => {
+    if (aboutText) {
+      updateAbout({ id: aboutText.id, updatedText: newText }) // Ensure both id and updatedText are passed
+        .unwrap()
+        .then(() => {
+          console.log("Successfully updated about text");
+        })
+        .catch((error) => {
+          console.error("Error updating about text:", error);
+        });
+      setOpen(false);
+      setState((newState) => ({
+        ...newState, 
+        open: true,
+        vertical: 'bottom',
+        horizontal: 'center',
+      }))
+    }
   };
   
 
@@ -86,6 +94,18 @@ const About: React.FC<AboutProps> = ({ isLoggedIn }) => {
         borderRadius: 4,
       }}
     >
+      <AutohideSnackbar
+        message={
+          response.isSuccess
+          ? 'About updated successfully' 
+          : 'About updated faled'
+        }
+        severity={response.isSuccess ? 'success' : 'error'}
+        state={state} 
+				setState={setState}
+				vertical={state.vertical}
+				horizontal={state.horizontal}
+      />
       {/* Title in the Top-Left Corner */}
       <Typography
         variant="h4"
@@ -126,11 +146,11 @@ const About: React.FC<AboutProps> = ({ isLoggedIn }) => {
 
       {/* About Text */}
       <Box sx={{ mt: 4, color: 'white', textAlign: 'left' }}>
-      {aboutText  && aboutText.map((item) => (
-          <Typography key={item.id} variant="body1">
-            {t(`intro`, item?.about)}
+      {about &&
+          <Typography variant="body1">
+            {about.about}
           </Typography>
-        ))}
+      }
       </Box>
 
       {/* Edit Modal */}
@@ -138,7 +158,7 @@ const About: React.FC<AboutProps> = ({ isLoggedIn }) => {
         <DialogTitle>{t('Edit About')}</DialogTitle>
         <Divider variant="middle" />
         <AboutForm
-          about={aboutText ? aboutText[0]?.about : ''}  // Pass the current about text
+          about={aboutText}  // Pass the current about text
           onCancel={handleClose} // Cancel handler
           onUpdate={handleUpdate} // Update handler
         />
